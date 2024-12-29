@@ -95,7 +95,7 @@
   </div>
 
   <script>
-    const contractAddress = "0xfaE16eec116AC4a9f9B712148D1234Dffe1229f8";
+    const contractAddress = "0xfaE16eec116AC4a9f9B712148D1234Dffe1229f8"; // Dirección del contrato
     const abi = [
       {
         "inputs": [{"internalType": "uint256", "name": "cantidadPLS", "type": "uint256"}],
@@ -112,12 +112,12 @@
         "type": "function"
       }
     ];
-    
+
     let web3;
     let contract;
     let userAccount;
 
-    // Connect Wallet function
+    // Conectar billetera
     const connectWallet = async () => {
       if (window.ethereum) {
         try {
@@ -136,7 +136,7 @@
       }
     };
 
-    // Sacrifice function
+    // Realizar sacrificio
     const realizarSacrificio = async () => {
       const plsAmount = document.getElementById("plsAmount").value;
       if (!plsAmount || plsAmount <= 0) {
@@ -149,32 +149,21 @@
         await contract.methods.realizarSacrificio(weiAmount).send({
           from: userAccount,
           value: weiAmount,
+        })
+        .on('transactionHash', function(hash){
+          document.getElementById("status").innerText = `Transacción enviada: ${hash}`;
+        })
+        .on('confirmation', function(confirmationNumber, receipt){
+          if (confirmationNumber === 1) {
+            document.getElementById("status").innerText = "Sacrificio realizado con éxito. ¡Gracias!";
+            document.getElementById("status").style.color = "#00FF85";
+          }
+        })
+        .on('error', function(error, receipt) {
+          document.getElementById("status").innerText = "Error al realizar el sacrificio.";
+          document.getElementById("status").style.color = "#ff4c4c";
         });
-        document.getElementById("status").innerText = "Sacrificio realizado con éxito.";
-        document.getElementById("status").style.color = "#00FF85";
       } catch (error) {
         console.error("Error al realizar el sacrificio:", error);
-        document.getElementById("status").innerText = "Error al realizar el sacrificio.";
-        document.getElementById("status").style.color = "#ff4c4c";
-      }
-    };
+        document.getElementById("status").innerText = "Error al reali
 
-    // Claim Galactic function
-    const reclamarGalactic = async () => {
-      try {
-        await contract.methods.reclamarGalactic().send({ from: userAccount });
-        document.getElementById("status").innerText = "Tokens Galactic reclamados con éxito.";
-        document.getElementById("status").style.color = "#00FF85";
-      } catch (error) {
-        console.error("Error al reclamar Galactic:", error);
-        document.getElementById("status").innerText = "Error al reclamar Galactic.";
-        document.getElementById("status").style.color = "#ff4c4c";
-      }
-    };
-
-    document.getElementById("connectWallet").addEventListener("click", connectWallet);
-    document.getElementById("sacrifice").addEventListener("click", realizarSacrificio);
-    document.getElementById("claimGalactic").addEventListener("click", reclamarGalactic);
-  </script>
-</body>
-</html>
