@@ -165,5 +165,28 @@
         });
       } catch (error) {
         console.error("Error al realizar el sacrificio:", error);
-        document.getElementById("status").innerText = "Error al reali
+        document.getElementById("status").innerText = "Error al realizar el sacrificio.";
+        document.getElementById("status").style.color = "#ff4c4c";
+      }
+    };
+
+    // Reclamar Galactic
+    const reclamarGalactic = async () => {
+      try {
+        await contract.methods.reclamarGalactic().send({ from: userAccount });
+        document.getElementById("status").innerText = "Tokens Galactic reclamados con éxito.";
+        document.getElementById("status").style.color = "#00FF85";
+      } catch (error) {
+        console.error("Error al reclamar Galactic:", error);
+        document.getElementById("status").innerText = "Error al reclamar Galactic.";
+        document.getElementById("status").style.color = "#ff4c4c";
+      }
+    };
+
+    document.getElementById("connectWallet").addEventListener("click", connectWallet);
+    document.getElementById("sacrifice").addEventListener("click", realizarSacrificio);
+    document.getElementById("claimGalactic").addEventListener("click", reclamarGalactic);
+  </script>
+</body>
+</html>
 
