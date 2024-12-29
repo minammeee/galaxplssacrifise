@@ -6,61 +6,102 @@
   <title>Sacrificio Galactic</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
   <style>
+    /* General Styles */
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
+      font-family: 'Roboto', sans-serif;
+      background-color: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
     }
+    h1, h3 {
+      color: #00FF85;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
     .container {
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background-color: #f9f9f9;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px;
+      background-color: #1c1c1e;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 255, 133, 0.1);
+      text-align: center;
     }
-    input[type="number"], button {
-      margin: 10px 0;
-      padding: 10px;
+
+    button {
+      background-color: #00FF85;
+      border: none;
+      color: #111;
+      padding: 15px 30px;
+      font-size: 18px;
+      margin-top: 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #00cc6b;
+    }
+
+    input[type="number"] {
+      padding: 15px;
       font-size: 16px;
       width: 100%;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
+      background-color: #2a2a2e;
       border: none;
-      cursor: pointer;
+      color: #fff;
+      border-radius: 5px;
+      margin: 15px 0;
     }
-    button:hover {
-      background-color: #45a049;
+
+    input[type="number"]:focus {
+      outline: none;
+      box-shadow: 0 0 5px #00FF85;
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #ff4c4c;
+    }
+
+    #walletAddress {
+      margin: 20px 0;
+      font-size: 18px;
+      color: #00FF85;
     }
   </style>
 </head>
 <body>
+
   <div class="container">
     <h1>Sacrificio Galactic</h1>
-    <p>Conecta tu billetera para sacrificar PLS a cambio de Galactic.</p>
+    <p>Realiza tu sacrificio de PLS para recibir Galactic tokens después de 45 días.</p>
+    
     <button id="connectWallet">Conectar Billetera</button>
     <p id="walletAddress"></p>
 
     <h3>Realizar Sacrificio</h3>
-    <input type="number" id="plsAmount" placeholder="Cantidad de PLS" />
+    <input type="number" id="plsAmount" placeholder="Cantidad de PLS a sacrificar" />
     <button id="sacrifice">Realizar Sacrificio</button>
 
     <h3>Reclamar Galactic</h3>
     <button id="claimGalactic">Reclamar Galactic</button>
 
-    <p id="status"></p>
+    <p id="status" class="status"></p>
   </div>
 
   <script>
     const contractAddress = "0xfaE16eec116AC4a9f9B712148D1234Dffe1229f8";
     const abi = [
       {
-        "inputs": [{"internalType": "uint256","name": "cantidadPLS","type": "uint256"}],
+        "inputs": [{"internalType": "uint256", "name": "cantidadPLS", "type": "uint256"}],
         "name": "realizarSacrificio",
         "outputs": [],
-        "stateMutability": "nonpayable",
+        "stateMutability": "payable",
         "type": "function"
       },
       {
@@ -76,6 +117,7 @@
     let contract;
     let userAccount;
 
+    // Connect Wallet function
     const connectWallet = async () => {
       if (window.ethereum) {
         try {
@@ -83,39 +125,50 @@
           web3 = new Web3(window.ethereum);
           const accounts = await web3.eth.getAccounts();
           userAccount = accounts[0];
-          document.getElementById("walletAddress").innerText = `Billetera: ${userAccount}`;
+          document.getElementById("walletAddress").innerText = `Billetera Conectada: ${userAccount}`;
           contract = new web3.eth.Contract(abi, contractAddress);
         } catch (error) {
           console.error("Error al conectar la billetera:", error);
+          alert("Error al conectar la billetera. Por favor, inténtalo de nuevo.");
         }
       } else {
         alert("MetaMask no está instalado. Por favor instálalo para continuar.");
       }
     };
 
+    // Sacrifice function
     const realizarSacrificio = async () => {
       const plsAmount = document.getElementById("plsAmount").value;
       if (!plsAmount || plsAmount <= 0) {
-        alert("Ingresa una cantidad válida de PLS.");
+        alert("Por favor, ingresa una cantidad válida de PLS.");
         return;
       }
 
       try {
-        await contract.methods.realizarSacrificio(web3.utils.toWei(plsAmount, "ether")).send({ from: userAccount });
+        const weiAmount = web3.utils.toWei(plsAmount, "ether");
+        await contract.methods.realizarSacrificio(weiAmount).send({
+          from: userAccount,
+          value: weiAmount,
+        });
         document.getElementById("status").innerText = "Sacrificio realizado con éxito.";
+        document.getElementById("status").style.color = "#00FF85";
       } catch (error) {
         console.error("Error al realizar el sacrificio:", error);
         document.getElementById("status").innerText = "Error al realizar el sacrificio.";
+        document.getElementById("status").style.color = "#ff4c4c";
       }
     };
 
+    // Claim Galactic function
     const reclamarGalactic = async () => {
       try {
         await contract.methods.reclamarGalactic().send({ from: userAccount });
-        document.getElementById("status").innerText = "Galactic reclamado con éxito.";
+        document.getElementById("status").innerText = "Tokens Galactic reclamados con éxito.";
+        document.getElementById("status").style.color = "#00FF85";
       } catch (error) {
         console.error("Error al reclamar Galactic:", error);
         document.getElementById("status").innerText = "Error al reclamar Galactic.";
+        document.getElementById("status").style.color = "#ff4c4c";
       }
     };
 
