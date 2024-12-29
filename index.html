@@ -6,7 +6,6 @@
   <title>Sacrificio Galactic</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
   <style>
-    /* General Styles */
     body {
       font-family: 'Roboto', sans-serif;
       background-color: #111;
@@ -121,15 +120,19 @@
     const connectWallet = async () => {
       if (window.ethereum) {
         try {
-          await ethereum.request({ method: "eth_requestAccounts" });
-          web3 = new Web3(window.ethereum);
-          const accounts = await web3.eth.getAccounts();
-          userAccount = accounts[0];
-          document.getElementById("walletAddress").innerText = `Billetera Conectada: ${userAccount}`;
-          contract = new web3.eth.Contract(abi, contractAddress);
+          // Solicitar acceso a la billetera de MetaMask
+          const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+          if (accounts && accounts.length > 0) {
+            web3 = new Web3(window.ethereum);
+            userAccount = accounts[0];
+            document.getElementById("walletAddress").innerText = `Billetera Conectada: ${userAccount}`;
+            contract = new web3.eth.Contract(abi, contractAddress);
+          } else {
+            alert("No se pudo conectar a la billetera.");
+          }
         } catch (error) {
           console.error("Error al conectar la billetera:", error);
-          alert("Error al conectar la billetera. Por favor, inténtalo de nuevo.");
+          alert("Error al conectar la billetera. Asegúrate de tener MetaMask instalado y configurado.");
         }
       } else {
         alert("MetaMask no está instalado. Por favor instálalo para continuar.");
@@ -189,4 +192,3 @@
   </script>
 </body>
 </html>
-
