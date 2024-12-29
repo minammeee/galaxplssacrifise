@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sacrificio Galactic</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+    input[type="number"], button {
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sacrificio Galactic</h1>
+    <p>Conecta tu billetera para sacrificar PLS a cambio de Galactic.</p>
+    <button id="connectWallet">Conectar Billetera</button>
+    <p id="walletAddress"></p>
+
+    <h3>Realizar Sacrificio</h3>
+    <input type="number" id="plsAmount" placeholder="Cantidad de PLS" />
+    <button id="sacrifice">Realizar Sacrificio</button>
+
+    <h3>Reclamar Galactic</h3>
+    <button id="claimGalactic">Reclamar Galactic</button>
+
+    <p id="status"></p>
+  </div>
+
+  <script>
+    const contractAddress = "0xfaE16eec116AC4a9f9B712148D1234Dffe1229f8";
+    const abi = [
+      {
+        "inputs": [{"internalType": "uint256","name": "cantidadPLS","type": "uint256"}],
+        "name": "realizarSacrificio",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "reclamarGalactic",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ];
+    
+    let web3;
+    let contract;
+    let userAccount;
+
+    const connectWallet = async () => {
+      if (window.ethereum) {
+        try {
+          await ethereum.request({ method: "eth_requestAccounts" });
+          web3 = new Web3(window.ethereum);
+          const accounts = await web3.eth.getAccounts();
+          userAccount = accounts[0];
+          document.getElementById("walletAddress").innerText = `Billetera: ${userAccount}`;
+          contract = new web3.eth.Contract(abi, contractAddress);
+        } catch (error) {
+          console.error("Error al conectar la billetera:", error);
+        }
+      } else {
+        alert("MetaMask no está instalado. Por favor instálalo para continuar.");
+      }
+    };
+
+    const realizarSacrificio = async () => {
+      const plsAmount = document.getElementById("plsAmount").value;
+      if (!plsAmount || plsAmount <= 0) {
+        alert("Ingresa una cantidad válida de PLS.");
+        return;
+      }
+
+      try {
+        await contract.methods.realizarSacrificio(web3.utils.toWei(plsAmount, "ether")).send({ from: userAccount });
+        document.getElementById("status").innerText = "Sacrificio realizado con éxito.";
+      } catch (error) {
+        console.error("Error al realizar el sacrificio:", error);
+        document.getElementById("status").innerText = "Error al realizar el sacrificio.";
+      }
+    };
+
+    const reclamarGalactic = async () => {
+      try {
+        await contract.methods.reclamarGalactic().send({ from: userAccount });
+        document.getElementById("status").innerText = "Galactic reclamado con éxito.";
+      } catch (error) {
+        console.error("Error al reclamar Galactic:", error);
+        document.getElementById("status").innerText = "Error al reclamar Galactic.";
+      }
+    };
+
+    document.getElementById("connectWallet").addEventListener("click", connectWallet);
+    document.getElementById("sacrifice").addEventListener("click", realizarSacrificio);
+    document.getElementById("claimGalactic").addEventListener("click", reclamarGalactic);
+  </script>
+</body>
+</html>
